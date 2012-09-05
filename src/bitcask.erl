@@ -551,12 +551,12 @@ needs_merge(Ref) ->
     %%
     FragTrigger = get_opt(frag_merge_trigger, State#bc_state.opts),
     DeadBytesTrigger = get_opt(dead_bytes_merge_trigger, State#bc_state.opts),
-    ExpirationTime = expiry_time(State#bc_state.opts),
+    %ExpirationTime = expiry_time(State#bc_state.opts),
 
     NeedsMerge = lists:any(fun(F) ->
                                    (F#file_status.fragmented >= FragTrigger)
                                        or (F#file_status.dead_bytes >= DeadBytesTrigger)
-                                       or (F#file_status.oldest_tstamp < ExpirationTime)
+                                       %or (F#file_status.oldest_tstamp < ExpirationTime)
                            end, Summary),
 
     case NeedsMerge of
@@ -571,8 +571,8 @@ needs_merge(Ref) ->
             %%
             Thresholds = [frag_threshold(State#bc_state.opts),
                           dead_bytes_threshold(State#bc_state.opts),
-                          small_file_threshold(State#bc_state.opts),
-                          expired_threshold(ExpirationTime)],
+                          small_file_threshold(State#bc_state.opts)],
+                          %expired_threshold(ExpirationTime)],
 
             %% For each file, apply the threshold checks and return a list
             %% of failed threshold checks
