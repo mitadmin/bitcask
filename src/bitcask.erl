@@ -206,8 +206,11 @@ put(Ref, Key, Value) ->
             ok
     end,
 
-    case bitcask_fileops:check_write(WriteFile, Key, Value,
-                                     State#bc_state.max_file_size) of
+    MaxFileSize = case application:get_env(?MODULE, max_file_size) of
+                      {ok, MFS} -> MFS;
+                      _ -> 16#20000000
+                  end,
+    case bitcask_fileops:check_write(WriteFile, Key, Value, MaxFileSize) of
         wrap ->
             %% Time to start a new write file. Note that we do not close the old
             %% one, just transition it. The thinking is that closing/reopening
@@ -791,9 +794,14 @@ inner_merge_write(K, V, Tstamp, State) ->
     %% write a single item while inside the merge process
 
     %% See if it's time to rotate to the next file
+    MaxFileSize = case application:get_env(?MODULE, max_file_size) of
+                      {ok, MFS} -> MFS;
+                      _ -> 16#20000000
+                  end,
+
     State1 =
         case bitcask_fileops:check_write(State#mstate.out_file,
-                                         K, V, State#mstate.max_file_size) of
+                                         K, V, MaxFileSize) of
             wrap ->
                 %% Close the current output file
                 ok = bitcask_fileops:sync(State#mstate.out_file),
